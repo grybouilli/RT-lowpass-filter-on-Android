@@ -6,6 +6,7 @@ set(SOURCE_FILES src/main.cpp ../oboe_boilerplates/acquire_audio_stream.cpp)
 
 include(cmake/liboboe.cmake)
 include(cmake/DynamicONNXRuntime.cmake)
+include(cmake/cxxopts.cmake)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
@@ -21,4 +22,5 @@ target_link_libraries(
     PRIVATE oboe
     PRIVATE log
     PRIVATE Ort::Ort
+    PRIVATE cxxopts::cxxopts
 )

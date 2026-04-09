@@ -1,6 +1,5 @@
 include(FetchContent)
 
-# ── Download & extract ─────────────────────────────────────────────────────────
 FetchContent_Declare(
     oboe
     GIT_REPOSITORY https://github.com/google/oboe

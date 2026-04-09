@@ -10,7 +10,7 @@
 #include <GRUInference.hpp>
 #include <BasicSessionHandler.hpp>
 #include <npy.hpp>
-
+#include <chrono>
 // ---------------------------------------------------------------------------
 // Player
 //   Oboe output callback.  Reads raw audio from SharedAudioBuffer, runs it
@@ -25,7 +25,9 @@ public:
         const float    fc_normed,
         int32_t        sample_rate,
         int32_t        channels,
-        audio_buffer&  buffer
+        audio_buffer&  buffer,
+        const bool     debug = false,
+        const bool     profiling = false
     )
         : m_sample_rate    { sample_rate }
         , m_channels       { channels }
@@ -34,6 +36,8 @@ public:
         // GRUBinding is constructed after the session so we can pass the session ref
         , m_gru_binding    { m_session_handle.session(), gru, fc_normed }
         , m_expected_frames { static_cast<int32_t>(gru.buffer_size()) }
+        , m_debug { debug }
+        , m_profiling { profiling }
     {
         printf("normed frequency is %f\n", fc_normed);
     }
@@ -43,6 +47,7 @@ public:
         void*    audio_data,
         int32_t  num_frames) override
     {
+        using namespace std::chrono;
         audio_sample_t* out = static_cast<audio_sample_t*>(audio_data);
         const int32_t   num_samples = num_frames * m_channels;
 
@@ -58,8 +63,22 @@ public:
             return oboe::DataCallbackResult::Continue;
         }
 
+        bool ret;
+        decltype(std::chrono::high_resolution_clock::now()) start, end;
+        if(m_profiling)
+        {
+            start = std::chrono::high_resolution_clock::now();
+        }
+
         // Run inference — writes filtered samples back into `out` in-place
-        if (m_gru_binding.run(out, out)) {
+        ret = m_gru_binding.run(out, out);
+
+        if(m_profiling)
+        {
+            end = std::chrono::high_resolution_clock::now();
+            m_recorded_performances.push_back(duration_cast<milliseconds>(end-start).count());
+        }
+        if(ret && m_debug){
             // Record output for offline dump
             m_recorded_signal.insert(
                 m_recorded_signal.end(),
@@ -71,11 +90,19 @@ public:
         return oboe::DataCallbackResult::Continue;
     }
 
-    void dump(const std::string& filename)
+    void dump_debug(const std::string& filename)
     {
         npy::npy_data<audio_sample_t> d;
         d.data  = m_recorded_signal;
         d.shape = { m_recorded_signal.size() };
+        npy::write_npy(filename, d);
+    }
+
+    void dump_profiling(const std::string& filename)
+    {
+        npy::npy_data<double> d;
+        d.data  = m_recorded_performances;
+        d.shape = { m_recorded_performances.size() };
         npy::write_npy(filename, d);
     }
 
@@ -89,5 +116,9 @@ private:
 
     int32_t              m_expected_frames;
 
+    bool                m_debug;
     std::vector<audio_sample_t> m_recorded_signal;
+    
+    bool                m_profiling;
+    std::vector<double>  m_recorded_performances;
 };

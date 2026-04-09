@@ -6,10 +6,12 @@
 #include <IIRGRUInfo.hpp>
 #include <IIRGRUUtils.hpp>
 #include <onnxruntime_cxx_api.h>
+#include <cxxopts.hpp>
+#include <chrono>
 
 static constexpr int KDurationMs = 10000;
 std::atomic<bool> run = true;
-static constexpr int32_t audio_buffer_size = 192;
+static constexpr int32_t audio_buffer_size = 256;
 
 void sigint_handler(int arg)
 {
@@ -18,11 +20,44 @@ void sigint_handler(int arg)
 
 int main(int argc, char ** argv)
 {
+    cxxopts::Options options("FilterProgram", "Audio passing through filter program");
+    options.add_options()
+    ("f,fc",        "Cutoff frequency (Hz)", cxxopts::value<int32_t>())
+    ("p,profiling", "Profiling mode : get information about session perfomance", cxxopts::value<bool>()->default_value("false"))
+    ("r,run_duration", "Run duration (seconds): indicate of much time to run the program (if not specified, the program runs until stopped with Ctrl+C)", cxxopts::value<int>())
+    ("d,debug", "Debug mode : get session input and output signals", cxxopts::value<bool>()->default_value("false"))
+    ;
+
+    auto args = options.parse(argc, argv);
+
     int32_t fc = 150;
-    if(argc > 1)
+
+    if(args.count("fc") > 0)
     {
-        fc = atoi(argv[1]);
+        fc = args["fc"].as<int32_t>();
     }
+
+    bool profiling = false;
+    if(args.count("profiling") > 0)
+    {
+        profiling = args["profiling"].as<bool>();
+        printf("Profiling active : %s\n", profiling ? "yes" : "no");
+    }
+
+    bool debug = false;
+    if(args.count("debug") > 0)
+    {
+        debug = args["debug"].as<bool>();
+        printf("Debug active : %s\n", debug ? "yes" : "no");
+    }
+
+    int run_duration = -1;
+    if(args.count("run_duration") > 0)
+    {
+        run_duration = args["run_duration"].as<int>();
+        printf("Run duration : %d seconds\n", run_duration);
+    }
+
     signal(SIGINT, sigint_handler);
 
     audio_buffer buffer(4096);
@@ -61,7 +96,7 @@ int main(int argc, char ** argv)
 
     // Instanciate recorder and player, and attach them to respectful streams
     Recorder recorder (in_sr, 1, buffer);
-    Player player (gru, normalize_frequency((float)fc, (float)out_sr), out_sr, 1, buffer);
+    Player player (gru, normalize_frequency((float)fc, (float)out_sr), out_sr, 1, buffer, debug, profiling);
 
     in_builder.setDataCallback(&recorder)->setSampleRate(in_sr)->setFramesPerCallback(audio_buffer_size);;
     out_builder.setDataCallback(&player)->setSampleRate(out_sr)->setFramesPerCallback(audio_buffer_size);;
@@ -109,9 +144,17 @@ int main(int argc, char ** argv)
 
     printf("Audio passing through ...\n");
 
-    while (run)
     {
-        /* code */
+        using namespace std::chrono;
+        auto last_timestamp = steady_clock::now();
+        int delta = 0; 
+        while (run)
+        {
+            delta = duration_cast<seconds>(steady_clock::now() - last_timestamp).count();
+            if(run_duration > 0 && delta > run_duration)
+                run = false;
+            std::this_thread::sleep_for(150ms);
+        }
     }
     
 
@@ -121,7 +164,11 @@ int main(int argc, char ** argv)
     instream->close();
 
     recorder.dump("input.npy");
-    player.dump("output.npy");
+    
+    if(debug)
+        player.dump_debug("output.npy");
+    if(profiling)
+        player.dump_profiling("latency.npy");
     printf("Done.\n");
 
     return  EXIT_SUCCESS;
