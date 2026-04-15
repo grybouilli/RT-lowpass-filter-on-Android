@@ -1,23 +1,16 @@
 #include <App.hpp>
 #include <IIRGRUUtils.hpp>
 
-App::App(int argc, char ** argv, std::atomic<bool>& running)
+App::App(const cxxopts::ParseResult& args, std::atomic<bool>& running)
 : m_running {running}
-, m_options {("FilterProgram", "Audio passing through filter program")}
 , m_audio_buffer {4096}
 , m_stream_handler{}
 , m_recorder{m_stream_handler.get_in_sr(), 1, m_audio_buffer}
-, m_player {m_gru, 0, m_stream_handler.get_out_sr(), 1, m_audio_buffer}
+, m_player { m_gru, args["model"].as<std::string>(), 0, m_stream_handler.get_out_sr(), 1, m_audio_buffer, args["cpu_only"].as<bool>()}
 , m_run_duration {-1}
 {
-    m_options.add_options()
-    ("f,fc",        "Cutoff frequency (Hz)", cxxopts::value<int32_t>())
-    ("p,profiling", "Profiling mode : get information about session perfomance", cxxopts::value<bool>()->default_value("false"))
-    ("r,run_duration", "Run duration (seconds): indicate of much time to run the program (if not specified, the program runs until stopped with Ctrl+C)", cxxopts::value<int>())
-    ("d,debug", "Debug mode : get session input and output signals", cxxopts::value<bool>()->default_value("false"))
-    ;
 
-    auto args = parse_options(argc, argv);
+    parse_options(args);
     m_player.set_normed_fc(
         normalize_frequency( (float)args["fc"].as<int32_t>(), (float)m_stream_handler.get_out_sr() )
     );
@@ -67,22 +60,21 @@ void App::run()
     m_stream_handler.stop_streams();
 }
 
-cxxopts::ParseResult App::parse_options(const int argc, char ** argv)
+void App::parse_options(const cxxopts::ParseResult& args)
 {
-    auto args = m_options.parse(argc, argv);
     bool profiling = false;
     if(args.count("profiling") > 0)
     {
         profiling = args["profiling"].as<bool>();
-        printf("Profiling active : %s\n", profiling ? "yes" : "no");
     }
+    printf("Profiling active : %s\n", profiling ? "yes" : "no");
 
     bool debug = false;
     if(args.count("debug") > 0)
     {
         debug = args["debug"].as<bool>();
-        printf("Debug active : %s\n", debug ? "yes" : "no");
     }
+    printf("Debug active : %s\n", debug ? "yes" : "no");
 
     if(args.count("run_duration") > 0)
     {
@@ -90,8 +82,14 @@ cxxopts::ParseResult App::parse_options(const int argc, char ** argv)
         printf("Run duration : %d seconds\n", m_run_duration);
     }
 
+    bool cpu_only = false;
+    if(args.count("cpu_only") > 0)
+    {
+        cpu_only = args["cpu_only"].as<int>();
+    }
+    printf("CPU only : %s \n",  cpu_only ? "yes" : "no");
+
     m_player.debug = debug;
     m_player.profiling = profiling;
 
-    return args;
 }

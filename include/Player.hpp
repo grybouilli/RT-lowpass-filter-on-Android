@@ -25,18 +25,20 @@ public:
 
 public:
     Player(
-        const IRRGRU&  gru,
-        const float    fc_normed,
-        int32_t        sample_rate,
-        int32_t        channels,
-        audio_buffer&  buffer,
-        const bool     dbg = false,
-        const bool     prflg = false
+        const IRRGRU&       gru,
+        const std::string   model_file,
+        const float         fc_normed,
+        int32_t             sample_rate,
+        int32_t             channels,
+        audio_buffer&       buffer,
+        const bool          cpu_only = false,
+        const bool          dbg = false,
+        const bool          prflg = false
     )
         : m_sample_rate    { sample_rate }
         , m_channels       { channels }
         , m_buffer         { buffer }
-        , m_session_handle { "./lowpass_rnn.onnx" }
+        , m_session_handle { model_file, cpu_only}
         // GRUBinding is constructed after the session so we can pass the session ref
         , m_gru_binding    { m_session_handle.session(), gru, fc_normed }
         , m_expected_frames { static_cast<int32_t>(gru.buffer_size()) }
@@ -94,7 +96,10 @@ public:
         return oboe::DataCallbackResult::Continue;
     }
 
-    void set_normed_fc(const float nfc) { m_gru_binding.set_normed_fc(nfc); }
+    void set_normed_fc(const float nfc) { 
+        printf("normed frequency is %f\n", nfc);
+        m_gru_binding.set_normed_fc(nfc); 
+    }
 
     void dump_debug(const std::string& filename)
     {

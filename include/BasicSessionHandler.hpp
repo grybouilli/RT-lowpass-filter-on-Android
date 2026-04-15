@@ -10,7 +10,7 @@
 class BasicSessionHandler {
 public:
 
-    BasicSessionHandler(const std::string model_filename)
+    BasicSessionHandler(const std::string model_filename, const bool cpu_only = false)
     : m_env(ORT_LOGGING_LEVEL_WARNING, "lowpass_rnn\n")
     {
         // Lists all providers compiled into your ORT build
@@ -22,6 +22,12 @@ public:
 
         // Use NNAPI if possible
         uint32_t nnapi_flags = 0;
+
+        if(cpu_only)
+        {
+            nnapi_flags |= NNAPI_FLAG_CPU_ONLY;
+        }
+        
         OrtStatus* status =
             OrtSessionOptionsAppendExecutionProvider_Nnapi(m_session_options, nnapi_flags);
 
@@ -36,6 +42,8 @@ public:
         
         m_session_options.SetIntraOpNumThreads(1);
         m_session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+        m_session_options.SetLogSeverityLevel(0);
+        m_session_options.SetLogId("ort_session");
 
         m_session = Ort::Session(m_env, model_filename.c_str(), m_session_options);
     }
