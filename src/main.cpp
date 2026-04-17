@@ -18,6 +18,8 @@ int main(int argc, char ** argv)
     ("p,profiling", "Profiling mode : get information about session perfomance (boolean)", cxxopts::value<bool>()->default_value("false"))
     ("r,run_duration", "Run duration (seconds): indicate of much time to run the program (if not specified, the program runs until stopped with Ctrl+C)", cxxopts::value<int>())
     ("d,debug", "Debug mode : get session input and output signals (boolean)", cxxopts::value<bool>()->default_value("false"))
+    ("e,ep", "Execution Provider selection. Availble EPs are : NnapiExecutionProvider, WebGpuExecutionProvider, XnnpackExecutionProvider, CPUExecutionProvider", 
+            cxxopts::value<std::string>()->default_value("XnnpackExecutionProvider"))
     ("c,cpu_only", "CPU only mode : NNAPI will not try to run inference on GPU/NPU (boolean)", cxxopts::value<bool>()->default_value("false"))
     ;
 

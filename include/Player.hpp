@@ -27,6 +27,7 @@ public:
     Player(
         const IRRGRU&       gru,
         const std::string   model_file,
+        const std::string   ep_provider,
         const float         fc_normed,
         int32_t             sample_rate,
         int32_t             channels,
@@ -38,7 +39,7 @@ public:
         : m_sample_rate    { sample_rate }
         , m_channels       { channels }
         , m_buffer         { buffer }
-        , m_session_handle { model_file, cpu_only}
+        , m_session_handle { model_file, ep_provider, cpu_only, dbg}
         // GRUBinding is constructed after the session so we can pass the session ref
         , m_gru_binding    { m_session_handle.session(), gru, fc_normed }
         , m_expected_frames { static_cast<int32_t>(gru.buffer_size()) }
