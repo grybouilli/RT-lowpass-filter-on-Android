@@ -34,10 +34,10 @@
     <!-- <img src="images/logo.png" alt="Logo" width="80" height="80"> -->
   </a>
 
-<h3 align="center">Real-Time Lowpass Filter on Android</h3>
+<h3 align="center">Real-Time IIR Filter on Android</h3>
 
   <p align="center">
-    A GRU-based lowpass filter applied to real-time audio on Android using liboboe and ONNX RT 
+    A GRU-based IIR filter applied to real-time audio on Android using liboboe and ONNX RT 
     <br />
     <a href="https://github.com/grybouilli/RT-lowpass-filter-on-Android"><strong>Explore the docs »</strong></a>
     <br />
@@ -119,23 +119,70 @@ adb kill-server
 adb start-server
 adb devices 
 # at this point, you might get prompted on your android device to allow your machine 
+adb push build/_deps/onnxruntime-src/jni/armeabi-v7a/libonnxruntime.so /data/local/tmp
 adb push build/filtered /data/local/tmp
 adb shell
 > device:/ $ cd /data/local/tmp # the folder is hidden, auto complete doesn't work
-> device:/data/local/tmp: $ ./filtered [frequency in Hz] 
+> device:/ $ export LD_LIBRARY_PATH=.
+> device:/data/local/tmp: $ ./filtered --fc [frequency in Hz] --model [path_to_model_file] 
 ```
 
+Usage : 
+```shell
+Usage:
+  ./filteredUsage:
+  FilterProgram [OPTION...]
+
+  -h, --help              Print usage
+  -m, --model arg         File containing the model to load (expected .onnx 
+                          file) (default: ./lowpass_rnn.onnx)
+  -f, --fc arg            Cutoff frequency (Hz)
+  -p, --profiling         Profiling mode : get information about session 
+                          perfomance (boolean)
+  -r, --run_duration arg  Run duration (seconds): indicate of much time to 
+                          run the program (if not specified, the program 
+                          runs until stopped with Ctrl+C)
+  -d, --debug             Debug mode : get session input and output signals 
+                          (boolean)
+  -e, --ep arg            Execution Provider selection. Availble EPs are : 
+                          NnapiExecutionProvider, WebGpuExecutionProvider, 
+                          XnnpackExecutionProvider, CPUExecutionProvider 
+                          (default: XnnpackExecutionProvider)
+  -c, --cpu_only          CPU only mode : NNAPI will not try to run 
+                          inference on GPU/NPU (boolean)
+ [OPTION...]
+
+  -h, --help              Print usage
+  -m, --model arg         File containing the model to load (expected .onnx 
+                          file) (default: ./lowpass_rnn.onnx)
+  -f, --fc arg            Cutoff frequency (Hz)
+  -p, --profiling         Profiling mode : get information about session 
+                          perfomance (boolean)
+  -r, --run_duration arg  Run duration (seconds): indicate of much time to 
+                          run the program (if not specified, the program 
+                          runs until stopped with Ctrl+C)
+  -d, --debug             Debug mode : get session input and output signals 
+                          (boolean)
+  -e, --ep arg            Execution Provider selection. Availble EPs are : 
+                          NnapiExecutionProvider, WebGpuExecutionProvider, 
+                          XnnpackExecutionProvider, CPUExecutionProvider 
+                          (default: XnnpackExecutionProvider)
+  -c, --cpu_only          CPU only mode : NNAPI will not try to run 
+                          inference on GPU/NPU (boolean)
+```
 
 <!-- ROADMAP -->
 ## Roadmap
 - [x] Finish README.md
-- [ ] Improve latency
-- [ ] Implement Second-Order Lowpass 
+- [x] Improve latency
+- [x] Implement Second-Order Lowpass 
 - [ ] Try other inference engines
     - [ ] RTNeural
     - [ ] TF Lite
     - [ ] Executorch
-- [ ] Try with [Anira](https://github.com/anira-project/anira)
+    - [ ] ncnn
+    - [ ] MNN
+- [ ] Multi-thread with [Anira](https://github.com/anira-project/anira)
 
 See the [open issues](https://github.com/grybouilli/RT-lowpass-filter-on-Android/issues) for a full list of proposed features (and known issues).
 
@@ -179,7 +226,7 @@ Distributed under the MIT License. See `LICENSE.md` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Nicolas Gry - grybouilli at outlook.fr
+Nicolas Gry - grybouilli at outlook.fr - nicolas.gry at inria.fr
 
 Project Link: [https://github.com/grybouilli/RT-lowpass-filter-on-Android](https://github.com/grybouilli/RT-lowpass-filter-on-Android)
 
