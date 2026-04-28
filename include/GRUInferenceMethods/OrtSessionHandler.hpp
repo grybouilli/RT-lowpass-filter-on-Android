@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cpu_provider_factory.h>
-#include <nnapi_provider_factory.h>
+// #include <nnapi_provider_factory.h>
 #include <onnxruntime_cxx_api.h>
 
 #include <iostream>
@@ -31,39 +31,16 @@ class OrtSessionHandler {
             std::cout << "  - " << p << std::endl;
         }
 
-        if (ep_name ==
-            magic_enum::enum_name(SupportedEPs::NnapiExecutionProvider)) {
-            // Use NNAPI if possible
-            uint32_t nnapi_flags = 0;
-
-            nnapi_flags |= NNAPI_FLAG_CPU_DISABLED;
-            OrtStatus* status = OrtSessionOptionsAppendExecutionProvider_Nnapi(
-                m_session_options,
-                nnapi_flags);
-
-            if (status != nullptr) {
-                // NNAPI EP not compiled in or not available on this device –
-                // fall back silently.
-                std::string err = Ort::GetApi().GetErrorMessage(status);
-                Ort::GetApi().ReleaseStatus(status);
-                std::cout << "NNAPI EP unavailable (" << err
-                          << "), using ORT CPU." << std::endl;
-            } else {
-                std::cout << "NNAPI EP registered (GPU/NPU preferred)."
-                          << std::endl;
-            }
-        } else {
-            try {
-                m_session_options.AppendExecutionProvider(ep_name);
-                std::cout << ep_name << " registered" << std::endl;
-            } catch (const Ort::Exception& e) {
-                std::cout << "Exception caught : " << e.what() << std::endl;
-                m_session_options.AppendExecutionProvider_CPU(1);
-                std::cout << "Falling back to "
-                          << magic_enum::enum_name(
-                                 SupportedEPs::CPUExecutionProvider)
-                          << std::endl;
-            }
+        try {
+            m_session_options.AppendExecutionProvider(ep_name);
+            std::cout << ep_name << " registered" << std::endl;
+        } catch (const Ort::Exception& e) {
+            std::cout << "Exception caught : " << e.what() << std::endl;
+            m_session_options.AppendExecutionProvider_CPU(1);
+            std::cout << "Falling back to "
+                      << magic_enum::enum_name(
+                             SupportedEPs::CPUExecutionProvider)
+                      << std::endl;
         }
 
         m_session_options.SetIntraOpNumThreads(1);

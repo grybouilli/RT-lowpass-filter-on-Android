@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCE_FILES src/main.cpp src/App.cpp src/acquire_audio_stream.cpp)
 
+option(ONNX_USE_QNN "Will fetch a version of Onnx Runtime that only supports QNN and CPU" OFF)
+
 include(cmake/liboboe.cmake)
 include(cmake/DynamicONNXRuntime.cmake)
 include(cmake/cxxopts.cmake)
@@ -26,3 +28,5 @@ target_link_libraries(
     PRIVATE cxxopts::cxxopts
     PRIVATE magic_enum::magic_enum
 )
+
+target_link_options(${PROJECT_NAME} PRIVATE -Wl,--allow-shlib-undefined)

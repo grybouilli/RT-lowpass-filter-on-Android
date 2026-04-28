@@ -107,10 +107,13 @@ Fetched by cmake :
 After installing the android ndk at `/path/to/ndk`, you clone the repo and build with cmake :
 ```sh
 git clone https://github.com/grybouilli/RT-GRU-IRR-filter-on-Android
-cmake -B build -DCMAKE_TOOLCHAIN_FILE=/path/to/ndk/build/cmake/android.toolchain.cmake [-GNinja] .
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=/path/to/ndk/build/cmake/android.toolchain.cmake [-DONNX_USE_QNN=ON] [-DANDROID_TOOLCHAIN_NAME=aarch64-linux-android-clang] [-GNinja] .
 cmake --build build
 ```
 
+Notes : 
+* The option `-DONNX_USE_QNN=ON` will make cmake fetch a version of onnx that supports QNN EP ; note that this means the only available EPs will be QNN and CPU ;
+* The option `-DANDROID_TOOLCHAIN_NAME=aarch64-linux-android-clang` ensures the built binary will be 64 bits. When not specified, Android ndk might default to 32-bit build.  
 ### Running
 
 Enable the developers options on your Android device. Connect it to your computer and allow adb in the developer's options. On your laptop, run :
