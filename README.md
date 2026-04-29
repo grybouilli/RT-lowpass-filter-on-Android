@@ -81,7 +81,7 @@
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-This repo uses the model from the project [First-Order Lowpass GRU](https://github.com/grybouilli/first-order-lowpass-GRU).
+This repo uses the model from the project [IIR GRU Filter](https://github.com/grybouilli/first-order-lowpass-GRU).
 
 In this repo, you'll find :
 * inference code based on ONNX Runtime to filter real-time audio;
@@ -133,26 +133,8 @@ adb shell
 Usage : 
 ```shell
 Usage:
-  ./filteredUsage:
-  FilterProgram [OPTION...]
-
-  -h, --help              Print usage
-  -m, --model arg         File containing the model to load (expected .onnx 
-                          file) (default: ./lowpass_rnn.onnx)
-  -f, --fc arg            Cutoff frequency (Hz)
-  -p, --profiling         Profiling mode : get information about session 
-                          perfomance (boolean)
-  -r, --run_duration arg  Run duration (seconds): indicate of much time to 
-                          run the program (if not specified, the program 
-                          runs until stopped with Ctrl+C)
-  -d, --debug             Debug mode : get session input and output signals 
-                          (boolean)
-  -e, --ep arg            Execution Provider selection. Availble EPs are : 
-                          NnapiExecutionProvider, WebGpuExecutionProvider, 
-                          XnnpackExecutionProvider, CPUExecutionProvider 
-                          (default: XnnpackExecutionProvider)
-  -c, --cpu_only          CPU only mode : NNAPI will not try to run 
-                          inference on GPU/NPU (boolean)
+  ./filtered [...]
+  FilterProgram 
  [OPTION...]
 
   -h, --help              Print usage
@@ -179,7 +161,7 @@ Usage:
 - [x] Finish README.md
 - [x] Improve latency
 - [x] Implement Second-Order Lowpass 
-- [ ] Implement modular interface for pluggable inference engine interfaces
+- [x] Implement modular interface for pluggable inference engine interfaces
 - [ ] Try other inference engines
     - [ ] RTNeural
     - [ ] TF Lite
