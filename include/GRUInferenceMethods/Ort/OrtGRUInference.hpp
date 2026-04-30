@@ -6,9 +6,9 @@
 #include <GRUInferenceMethods/Ort/OrtTensorBuffer.hpp>
 
 template <IsIIRGRUInfo IIRGRU>
-class GRUOrtInference final : public GRUInferenceMethodBase<IIRGRU> {
+class OrtGRUInference final : public GRUInferenceMethodBase<IIRGRU> {
    public:
-    GRUOrtInference(const IIRGRU&                gru,
+    OrtGRUInference(const IIRGRU&                gru,
                     const GeneralInferenceParams gparams,
                     const OrtParams&             ieparams) :
         GRUInferenceMethodBase<IIRGRU>(gru, gparams, ieparams),

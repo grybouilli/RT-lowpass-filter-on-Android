@@ -3,7 +3,7 @@
 #include <GRUInferenceMethods/Anira/AniraGRUInference.hpp>
 #include <GRUInferenceMethods/GeneralInferenceParams.hpp>
 #include <GRUInferenceMethods/IEParams.hpp>
-#include <GRUInferenceMethods/Ort/GRUOrtInference.hpp>
+#include <GRUInferenceMethods/Ort/OrtGRUInference.hpp>
 #include <IIRGRUInfo.hpp>
 #include <memory>
 
@@ -17,7 +17,7 @@ class GRUBinding {
         m_chosen_method{gparams.chosen_engine} {
         if constexpr (std::is_same_v<IEParams, OrtParams>) {
             m_inference_method =
-                std::make_unique<GRUOrtInference<IIRGRU>>(gru,
+                std::make_unique<OrtGRUInference<IIRGRU>>(gru,
                                                           gparams,
                                                           ieparams);
         } else if constexpr (std::is_same_v<IEParams, AniraParams>) {
