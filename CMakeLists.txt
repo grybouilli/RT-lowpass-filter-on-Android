@@ -8,6 +8,7 @@ option(ONNX_USE_QNN "Will fetch a version of Onnx Runtime that only supports QNN
 
 set(ANIRA_WITH_TFLITE OFF)
 set(ANIRA_WITH_LIBTORCH OFF)
+set(LIBONNXRUNTIME_VERSION 1.24.2)
 add_subdirectory(modules/anira)
 
 include(cmake/liboboe.cmake)
