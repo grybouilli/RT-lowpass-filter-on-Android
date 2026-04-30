@@ -72,7 +72,7 @@ class Player : public oboe::AudioStreamDataCallback {
         }
 
         // Run inference - writes filtered samples back into `out` in-place
-        ret = m_gru_binding.run(out, out);
+        ret = m_gru_binding.run(out, num_samples);
 
         if (profiling) {
             end = std::chrono::high_resolution_clock::now();
